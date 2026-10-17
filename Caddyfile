@@ -1,0 +1,4 @@
+{$LATENT_DOMAIN}, www.{$LATENT_DOMAIN} {
+  encode gzip
+  reverse_proxy latent-app:3000
+}

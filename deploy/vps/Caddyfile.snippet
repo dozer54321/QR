@@ -1,0 +1,7 @@
+# Added automatically when an existing Caddy is found (host or Requestick's container).
+# Host Caddy proxies 127.0.0.1:3070. Docker Caddy proxies latent-app on its network.
+
+qr.yourmomon.top, www.qr.yourmomon.top {
+  encode gzip
+  reverse_proxy latent-app:3000
+}

@@ -1,0 +1,44 @@
+name: Publish image
+
+# Every push to main builds the app image and publishes it on the public
+# "rolling" release. The VPS loads that file. It never clones or logs in.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: publish-image
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build image
+        run: |
+          VERSION="${GITHUB_SHA::7}"
+          docker build -t latent:local --build-arg LATENT_VERSION="$VERSION" .
+      - name: Save image tarball
+        run: |
+          mkdir -p artifacts
+          docker save latent:local | gzip -c > artifacts/latent-image.tar.gz
+          printf '%s\n' "${GITHUB_SHA}" > artifacts/REVISION
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: rolling
+          name: Rolling
+          prerelease: true
+          make_latest: false
+          files: |
+            artifacts/latent-image.tar.gz
+            artifacts/REVISION
+          body: |
+            Auto-built from ${{ github.sha }}.
+            qr.yourmomon.top loads this image on the next check. No GitHub login on the VPS.

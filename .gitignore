@@ -1,0 +1,12 @@
+node_modules
+.output
+.vercel
+dist
+screenshots
+artifacts
+*.env
+latent.env
+latent-image.tar.gz
+.autoupdate-rev
+.update.lock
+docker-compose.override.yml

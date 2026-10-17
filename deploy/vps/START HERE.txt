@@ -1,0 +1,24 @@
+LATENT
+======
+
+QR studio at qr.yourmomon.top.
+Sits beside Requestick the same way yourmomon.top does.
+No git. No username. No compile once the image is published.
+
+Point a DNS A record for qr.yourmomon.top at this machine, then paste one line at a time:
+
+  sudo apt-get update && sudo apt-get install -y curl
+  curl -fsSL -o /tmp/latent-install.sh https://raw.githubusercontent.com/dozer54321/latent/main/deploy/vps/bootstrap.sh
+  sudo bash /tmp/latent-install.sh
+
+Listens on 127.0.0.1:3070. Does not take ports 80 or 443 if Caddy is already there.
+
+A push to main is live within about 2 minutes:
+
+  systemctl status latent-update.timer
+
+Repair Caddy wiring:
+
+  sudo /opt/latent/deploy/vps/repair.sh qr.yourmomon.top
+
+There is no database. Backup only saves latent.env.

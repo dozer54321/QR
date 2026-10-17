@@ -1,0 +1,68 @@
+name: latent
+
+# Default: no Caddy of our own. Latent listens on 127.0.0.1:3070 and piggybacks
+# the Caddy already serving Requestick (or any other Caddy on the box), the same
+# way yourmomon.top does. 3090 is the eye tracker.
+# No existing Caddy:  COMPOSE_PROFILES=edge docker compose --env-file latent.env up -d
+
+services:
+  app:
+    image: ${LATENT_IMAGE:-latent:local}
+    container_name: latent-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        LATENT_VERSION: ${LATENT_VERSION:-dev}
+    pull_policy: missing
+    restart: unless-stopped
+    init: true
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3000"
+      NODE_ENV: production
+      LATENT_VERSION: ${LATENT_VERSION:-dev}
+    ports:
+      - "127.0.0.1:${LATENT_PORT:-3070}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    networks:
+      latent:
+        aliases:
+          - latent-app
+
+  caddy:
+    profiles: ["edge"]
+    image: caddy:2-alpine
+    container_name: latent-caddy
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      LATENT_DOMAIN: ${LATENT_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - latent
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  latent:
