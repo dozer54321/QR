@@ -12,8 +12,8 @@ fi
 cd "$ROOT"
 
 SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
-REV_URL="https://github.com/dozer54321/latent/releases/download/rolling/REVISION"
-IMG_URL="https://github.com/dozer54321/latent/releases/download/rolling/latent-image.tar.gz"
+REV_URL="https://github.com/dozer54321/QR/releases/download/rolling/REVISION"
+IMG_URL="https://github.com/dozer54321/QR/releases/download/rolling/latent-image.tar.gz"
 STATE="$ROOT/.autoupdate-rev"
 
 install_timer() {

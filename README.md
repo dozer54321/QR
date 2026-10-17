@@ -15,11 +15,11 @@ sudo apt-get update && sudo apt-get install -y curl
 ```
 
 ```bash
-curl -fsSL -o /tmp/latent-install.sh https://raw.githubusercontent.com/dozer54321/latent/main/deploy/vps/bootstrap.sh
+curl -fsSL -o /tmp/qr-install.sh https://raw.githubusercontent.com/dozer54321/QR/main/deploy/vps/bootstrap.sh
 ```
 
 ```bash
-sudo bash /tmp/latent-install.sh
+sudo bash /tmp/qr-install.sh
 ```
 
 It uses the Caddy you already run (same as Take-Home, Parrot Clicker, and Momon) and listens on `127.0.0.1:3070`. Eye tracker already has `3090`.

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Latent. One command. No questions. No git. No compile if the image is published.
-#   sudo bash /tmp/latent-install.sh
+#   sudo bash /tmp/qr-install.sh
 set -euo pipefail
 export GIT_TERMINAL_PROMPT=0
 unset GIT_ASKPASS SSH_ASKPASS || true
@@ -12,8 +12,8 @@ fi
 
 DOMAIN="${1:-qr.yourmomon.top}"
 ROOT=/opt/latent
-SRC_URL="https://codeload.github.com/dozer54321/latent/tar.gz/refs/heads/main"
-IMG_URL="https://github.com/dozer54321/latent/releases/download/rolling/latent-image.tar.gz"
+SRC_URL="https://codeload.github.com/dozer54321/QR/tar.gz/refs/heads/main"
+IMG_URL="https://github.com/dozer54321/QR/releases/download/rolling/latent-image.tar.gz"
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
