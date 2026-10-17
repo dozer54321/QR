@@ -49,29 +49,6 @@ function lum(c: Rgb) {
   return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
 }
 
-function mix(a: Rgb, b: Rgb, t: number): Rgb {
-  return {
-    r: a.r + (b.r - a.r) * t,
-    g: a.g + (b.g - a.g) * t,
-    b: a.b + (b.b - a.b) * t,
-  };
-}
-
-/** Keep a floor so a camera still separates dark modules from light ones. */
-function pushLum(color: Rgb, dark: boolean): Rgb {
-  const L = lum(color);
-  if (dark) {
-    const cap = 72;
-    if (L <= cap) return color;
-    const scale = cap / Math.max(1, L);
-    return { r: color.r * scale, g: color.g * scale, b: color.b * scale };
-  }
-  const floor = 198;
-  if (L >= floor) return color;
-  const lift = floor - L;
-  return { r: color.r + lift, g: color.g + lift, b: color.b + lift };
-}
-
 function sample(photo: Photo, u: number, v: number): Rgb {
   const x = Math.min(photo.width - 1, Math.max(0, Math.floor(u * photo.width)));
   const y = Math.min(photo.height - 1, Math.max(0, Math.floor(v * photo.height)));
@@ -108,7 +85,7 @@ function fillRect(
   }
 }
 
-function paintPhotoCell(
+function paintWovenCell(
   out: Uint8ClampedArray,
   width: number,
   x0: number,
@@ -118,21 +95,35 @@ function paintPhotoCell(
   col: number,
   row: number,
   n: number,
-  veil: Rgb,
-  veilMix: number,
+  dark: boolean,
+  conceal: number,
 ) {
+  const darkCap = 58 + conceal * 46;
+  const lightFloor = 210 - conceal * 42;
   for (let yy = 0; yy < cell; yy++) {
     for (let xx = 0; xx < cell; xx++) {
-      const u = (col + xx / cell) / n;
-      const v = (row + yy / cell) / n;
-      const px = mix(sample(photo, u, v), veil, veilMix);
+      const u = (col + (xx + 0.5) / cell) / n;
+      const v = (row + (yy + 0.5) / cell) / n;
+      const coded = shiftLum(sample(photo, u, v), dark, darkCap, lightFloor);
       const i = ((y0 + yy) * width + (x0 + xx)) * 4;
-      out[i] = clampByte(px.r);
-      out[i + 1] = clampByte(px.g);
-      out[i + 2] = clampByte(px.b);
+      out[i] = clampByte(coded.r);
+      out[i + 1] = clampByte(coded.g);
+      out[i + 2] = clampByte(coded.b);
       out[i + 3] = 255;
     }
   }
+}
+
+function shiftLum(pixel: Rgb, dark: boolean, darkCap: number, lightFloor: number): Rgb {
+  const L = lum(pixel);
+  if (dark) {
+    if (L <= darkCap) return pixel;
+    const scale = darkCap / Math.max(1, L);
+    return { r: pixel.r * scale, g: pixel.g * scale, b: pixel.b * scale };
+  }
+  if (L >= lightFloor) return pixel;
+  const lift = lightFloor - L;
+  return { r: pixel.r + lift, g: pixel.g + lift, b: pixel.b + lift };
 }
 
 export function paintCode(opts: {
@@ -169,14 +160,7 @@ export function paintCode(opts: {
         fillRect(out, width, x0, y0, cell, cell, dark ? fg : bg);
         continue;
       }
-      const inset = Math.max(1, Math.round(cell * (0.06 + conceal * 0.16)));
-      const core = cell - inset * 2;
-      paintPhotoCell(out, width, x0, y0, cell, photo, col, row, n, bg, 0.08);
-      const shot = sample(photo, (col + 0.5) / n, (row + 0.5) / n);
-      const target = dark ? fg : bg;
-      const blend = 1 - conceal * 0.5;
-      const color = pushLum(mix(shot, target, blend), dark);
-      if (core > 0) fillRect(out, width, x0 + inset, y0 + inset, core, core, color);
+      paintWovenCell(out, width, x0, y0, cell, photo, col, row, n, dark, conceal);
     }
   }
 

@@ -133,7 +133,7 @@ export function LatentStudio({ openingSrc }: { openingSrc: string }) {
       const sy = (img.height - crop) / 2;
       ctx.drawImage(img, sx, sy, crop, crop, 0, 0, side, side);
       const frame = ctx.getImageData(0, 0, side, side);
-      setPhoto({ data: frame.data, width: side, height: side });
+      setPhoto({ data: new Uint8ClampedArray(frame.data), width: side, height: side });
       setPhotoName(file.name);
       URL.revokeObjectURL(url);
     };
